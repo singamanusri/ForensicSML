@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ rec.evidence_id }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('evidence') }}" class="small">&larr; All evidence</a>
+<h1 class="page-title">{{ rec.original_filename }}</h1>
+<div class="card-panel mb-3">
+  <dl class="row mb-2 small">
+    <dt class="col-sm-3">Evidence ID</dt><dd class="col-sm-9">{{ rec.evidence_id }}</dd>
+    <dt class="col-sm-3">Uploaded</dt><dd class="col-sm-9">{{ rec.upload_time }}</dd>
+    <dt class="col-sm-3">Size</dt><dd class="col-sm-9">{{ rec.size_bytes }} bytes</dd>
+    <dt class="col-sm-3">SHA-256</dt><dd class="col-sm-9"><code class="text-break">{{ rec.sha256 }}</code></dd>
+  </dl>
+  <form action="{{ url_for('verify', evidence_id=rec.evidence_id) }}" method="post" class="mb-2">
+    <button class="btn btn-sm btn-outline-primary"><i class="bi bi-patch-check"></i> Re-verify hash</button>
+  </form>
+  <p class="small text-muted mb-0">A matching hash shows the file is unchanged since upload. It does not prove the evidence was authentic originally, and it is not a chain-of-custody record.</p>
+</div>
+<div class="card-panel mb-3">
+  <h2 class="h6">Validation result</h2>
+  <p class="mb-2">{{ report.rows_total }} rows read &middot; <span class="text-success">{{ report.rows_valid }} valid</span> &middot;
+    <span class="{{ 'text-danger' if report.rows_invalid else 'text-muted' }}">{{ report.rows_invalid }} invalid</span> &middot;
+    labels: {{ report.label_counts or 'none' }}</p>
+  {% for w in report.warnings %}<div class="alert alert-warning py-1 small mb-1">{{ w }}</div>{% endfor %}
+  {% if report.issues %}
+  <div class="table-responsive mt-2"><table class="table table-sm small mb-0">
+    <thead><tr><th>CSV row</th><th>Problem(s)</th></tr></thead>
+    <tbody>{% for i in report.issues %}<tr><td>{{ i.row }}</td><td>{{ i.problems }}</td></tr>{% endfor %}</tbody></table></div>
+  <p class="small text-muted mt-1 mb-0">Invalid rows stay in the original file but are excluded from analysis.</p>
+  {% endif %}
+</div>
+<div class="card-panel">
+  <h2 class="h6">Records preview (original file, page {{ page }} of {{ pages }})</h2>
+  <div class="table-responsive"><table class="table table-sm table-striped small">
+    <thead><tr><th>#</th>{% for c in columns %}<th>{{ c }}</th>{% endfor %}</tr></thead>
+    <tbody>{% for row in rows %}<tr><td class="text-muted">{{ first_row + loop.index0 }}</td>{% for v in row %}<td>{{ v }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table></div>
+  <div class="d-flex gap-2">
+    {% if page > 1 %}<a class="btn btn-sm btn-outline-secondary" href="?page={{ page - 1 }}">Previous</a>{% endif %}
+    {% if page < pages %}<a class="btn btn-sm btn-outline-secondary" href="?page={{ page + 1 }}">Next</a>{% endif %}
+  </div>
+</div>
+{% endblock %}

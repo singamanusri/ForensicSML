@@ -1,0 +1,26 @@
+:root { --teal:#0f8b8d; --teal-soft:#e6f4f4; --ink:#1f2d3d; --bg:#f5f8fb; --line:#dde6ee; }
+body { background:var(--bg); color:var(--ink); font-family:"Inter","Segoe UI",system-ui,sans-serif; }
+.app-shell { display:flex; min-height:100vh; }
+.sidebar { width:230px; background:#fff; border-right:1px solid var(--line); padding:1.25rem 1rem; display:flex; flex-direction:column; position:sticky; top:0; height:100vh; }
+.brand { font-weight:700; font-size:1.25rem; margin-bottom:1.5rem; color:var(--ink); }
+.brand i { color:var(--teal); } .brand span { color:var(--teal); }
+.sidebar .nav-link { color:#4a5b6c; border-radius:.5rem; padding:.55rem .75rem; margin-bottom:.15rem; }
+.sidebar .nav-link i { margin-right:.5rem; }
+.sidebar .nav-link:hover { background:var(--teal-soft); }
+.sidebar .nav-link.active { background:var(--teal-soft); color:var(--teal); font-weight:600; }
+.sidebar-foot { margin-top:auto; font-size:.75rem; color:#7a8a99; }
+.content { flex:1; padding:1.75rem 2rem; min-width:0; }
+.page-title { font-size:1.6rem; font-weight:650; margin-bottom:.5rem; }
+.card-panel, .stat-card { background:#fff; border:1px solid var(--line); border-radius:.75rem; padding:1.1rem 1.25rem; }
+.stat-card .label { font-size:.8rem; color:#6b7c8c; text-transform:uppercase; letter-spacing:.04em; }
+.stat-card .value { font-size:1.8rem; font-weight:700; color:var(--teal); }
+.stat-card .small-value { font-size:1rem; padding-top:.6rem; }
+.btn-primary { background:var(--teal); border-color:var(--teal); }
+.btn-primary:hover { background:#0c7274; border-color:#0c7274; }
+a { color:var(--teal); }
+@media (max-width:768px) {
+  .app-shell { flex-direction:column; }
+  .sidebar { width:100%; height:auto; position:static; flex-direction:row; flex-wrap:wrap; align-items:center; gap:.5rem; }
+  .sidebar .nav { flex-direction:row !important; } .brand { margin:0 1rem 0 0; } .sidebar-foot { display:none; }
+  .content { padding:1rem; }
+}

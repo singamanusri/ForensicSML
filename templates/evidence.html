@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Evidence{% endblock %}
+{% block content %}
+<h1 class="page-title">Evidence Management</h1>
+<div class="row g-3 mb-4">
+  <div class="col-lg-6"><div class="card-panel h-100">
+    <h2 class="h6">Upload event log (CSV)</h2>
+    <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+      <input class="form-control mb-2" type="file" name="file" accept=".csv" required>
+      <button class="btn btn-primary"><i class="bi bi-upload"></i> Upload &amp; validate</button>
+    </form>
+    <p class="small text-muted mt-2 mb-0">Max {{ max_mb }} MB. Your original file is stored unchanged; a SHA-256 hash is recorded at upload.</p>
+  </div></div>
+  <div class="col-lg-6"><div class="card-panel h-100">
+    <h2 class="h6">CSV format</h2>
+    <p class="small mb-1"><strong>Required:</strong> <code>{{ required|join('</code>, <code>'|safe) }}</code></p>
+    <p class="small mb-2"><strong>Optional:</strong> <code>{{ optional|join('</code>, <code>'|safe) }}</code></p>
+    <p class="small text-muted">login_status: success / failed / not_applicable. label: normal / suspicious (needed for supervised learning).</p>
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('download_template') }}"><i class="bi bi-download"></i> Template</a>
+    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('download_sample') }}"><i class="bi bi-download"></i> Synthetic sample</a>
+  </div></div>
+</div>
+<div class="card-panel">
+  <h2 class="h6">Registered evidence</h2>
+  {% if registry %}
+  <div class="table-responsive"><table class="table table-sm align-middle">
+    <thead><tr><th>ID</th><th>Filename</th><th>Uploaded</th><th>SHA-256</th><th class="text-end">Valid</th><th class="text-end">Invalid</th><th>Labels</th></tr></thead>
+    <tbody>{% for r in registry %}<tr>
+      <td><a href="{{ url_for('evidence_detail', evidence_id=r.evidence_id) }}">{{ r.evidence_id }}</a>
+        {% if r.is_sample == 'True' %}<span class="badge text-bg-info">synthetic</span>{% endif %}</td>
+      <td>{{ r.original_filename }}</td><td>{{ r.upload_time }}</td>
+      <td><code title="{{ r.sha256 }}">{{ r.sha256[:16] }}…</code></td>
+      <td class="text-end">{{ r.rows_valid }}</td><td class="text-end">{{ r.rows_invalid }}</td>
+      <td>{{ 'yes' if r.has_labels == 'True' else 'no' }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="text-muted mb-0">No evidence registered yet.</p>{% endif %}
+</div>
+{% endblock %}

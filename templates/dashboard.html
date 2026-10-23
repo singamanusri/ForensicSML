@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1 class="page-title">Dashboard</h1>
+<p class="text-muted">Overview computed from the evidence registered on this machine.</p>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><div class="stat-card"><div class="label">Evidence files</div><div class="value">{{ stats.files }}</div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card"><div class="label">Valid event records</div><div class="value">{{ '{:,}'.format(stats.records) }}</div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card"><div class="label">Labelled datasets</div><div class="value">{{ stats.labelled }}</div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card"><div class="label">Latest upload</div><div class="value small-value">{{ stats.latest.upload_time if stats.latest else '—' }}</div></div></div>
+</div>
+<div class="card-panel mb-4">
+  <h2 class="h5 mb-3">Statistical Forensic Analysis</h2>
+  {% if analysis %}
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="label">Total analyzed events</div>
+        <div class="value">{{ '{:,}'.format(analysis.total_events) }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="label">Failed logins</div>
+        <div class="value">{{ analysis.failed_logins }}</div>
+        <small class="text-muted">{{ analysis.failed_login_percentage }}% of events</small>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="label">Suspicious events</div>
+        <div class="value">{{ analysis.label_counts.get('suspicious', analysis.label_counts.get('Suspicious', 0)) }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="label">Normal events</div>
+        <div class="value">{{ analysis.label_counts.get('normal', analysis.label_counts.get('Normal', 0)) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-lg-6">
+      <div class="border rounded p-3 h-100">
+        <h3 class="h6">Event type distribution</h3>
+        {% for name, count in analysis.event_counts.items() %}
+        <div class="mb-2">
+          <div class="d-flex justify-content-between">
+            <span>{{ name.replace('_', ' ')|title }}</span><strong>{{ count }}</strong>
+          </div>
+          <div class="progress" role="progressbar" aria-valuenow="{{ (count / analysis.total_events * 100)|round|int if analysis.total_events else 0 }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" style="width: {{ (count / analysis.total_events * 100) if analysis.total_events else 0 }}%"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-12 col-lg-6">
+      <div class="border rounded p-3 h-100">
+        <h3 class="h6">Top source IP addresses</h3>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead><tr><th>Source IP</th><th class="text-end">Events</th></tr></thead>
+            <tbody>
+              {% for ip, count in analysis.top_ips.items() %}
+              <tr><td>{{ ip }}</td><td class="text-end">{{ count }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-6">
+      <div class="border rounded p-3 h-100">
+        <h3 class="h6">Failed-attempt statistics</h3>
+        <p class="mb-1">Average failed attempts: <strong>{{ analysis.failed_attempt_mean }}</strong></p>
+        <p class="mb-0">Maximum failed attempts: <strong>{{ analysis.failed_attempt_max }}</strong></p>
+      </div>
+    </div>
+    <div class="col-12 col-lg-6">
+      <div class="border rounded p-3 h-100">
+        <h3 class="h6">Data transfer statistics</h3>
+        <p class="mb-1">Average bytes transferred: <strong>{{ '{:,.2f}'.format(analysis.bytes_transferred_mean) }}</strong></p>
+        <p class="mb-0">Maximum bytes transferred: <strong>{{ '{:,}'.format(analysis.bytes_transferred_max) }}</strong></p>
+      </div>
+    </div>
+  </div>
+  <p class="text-muted small mt-3 mb-0">Analysis currently uses the registered sample evidence file. These counts are statistical indicators and do not independently prove malicious activity.</p>
+  {% else %}
+  <p class="text-muted mb-0">No analysis results are available yet. Check that the sample evidence file exists and that the application log contains no analysis errors.</p>
+  {% endif %}
+</div>
+<div class="card-panel">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="h6 mb-0">Recent evidence</h2><a href="{{ url_for('evidence') }}" class="btn btn-sm btn-outline-primary">Manage evidence</a>
+  </div>
+  {% if registry %}
+  <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+    <thead><tr><th>ID</th><th>File</th><th>Uploaded</th><th class="text-end">Valid rows</th></tr></thead>
+    <tbody>{% for r in registry %}<tr>
+      <td><a href="{{ url_for('evidence_detail', evidence_id=r.evidence_id) }}">{{ r.evidence_id }}</a></td>
+      <td>{{ r.original_filename }}</td><td>{{ r.upload_time }}</td><td class="text-end">{{ r.rows_valid }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="text-muted mb-0">No evidence yet. Upload a CSV on the Evidence page.</p>{% endif %}
+</div>
+{% endblock %}
